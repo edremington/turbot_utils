@@ -6,6 +6,7 @@ import turbotutils.guardrails
 import argparse
 import csv
 import json
+import pprint
 
 if __name__ == '__main__':
     """ Preforms a guardrail diff of two accounts to allow for easier migration between two accounts and validation"""
@@ -49,7 +50,14 @@ if __name__ == '__main__':
         print("Finding the guardrail differences between %s and %s" % (args.source, args.dest))
         for guardrail in sourceguardrails:
             source = sourceguardrails[guardrail]['value']
-            dest = destguardrails[guardrail]['value']
+            try:      
+                dest = destguardrails[guardrail]['value']
+            except:
+                print ("Error: cannot read data")
+                if ((source.get('value') is not None ) and ( 'value' in source)):
+                    writer.writerow([guardrail, source['value'], 'No Value Set on destination account '+args.dest])
+                else:
+                    writer.writerow([guardrail, source['$value'], 'No Value Set on destination account '+args.dest])
             if source != dest:
                 if not ((dest.get('value') is not None ) and ( 'value' in dest )):
                     print("Guardrail %s on source account is set to %s and %s on destination account" % (guardrail, source['value'], 'No Value set in'+args.dest))
@@ -60,7 +68,7 @@ if __name__ == '__main__':
                     print("Guardrail %s is not set on source account (%s) and is set to %s on destination account" % (guardrail, args.source, dest['value']))
                     difference_count += 1
                     writer.writerow([guardrail, 'No Value set in account '+args.source, dest['value']])
-                    continue 
+                    continue
                 if source['value'] != dest['value']:
                     print("Guardrail %s on source account is set to %s and %s on destination account" % (guardrail, source['value'], dest['value']))
                     difference_count += 1
