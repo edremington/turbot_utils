@@ -48,9 +48,14 @@ if __name__ == '__main__':
         destguardrails = turbotutils.guardrails.get_guardrail_list(turbot_api_access_key, turbot_api_secret_key, turbot_host_certificate_verification,
                                                                    turbot_host,
                                                                    dest_source_account_urn)
+        # find any rails in the dest that is not in source ( if any)
+        # and iterate over that instead of just over source
+        notInFirst = list(set(destguardrails) - set(sourceguardrails))
+        railsList = list(set(sourceguardrails)) + notInFirst
         writer.writerow(['Guardrail-Name', 'Source-value', 'Source-requirement','Destination-value','Destination-requirement'])
         print("Finding the guardrail differences between %s and %s" % (args.source, args.dest))
-        for guardrail in sourceguardrails:
+        
+        for guardrail in railsList:
             sourceReq=""
             destReq=""
             sourceVal=""
@@ -92,7 +97,7 @@ if __name__ == '__main__':
                     sourceReq=source['requirement']
                 if destReq == "":
                     destReq=dest['requirement']
-                print('%s:%s I got a KeyError in "%s" - keyValue: %s' %  ('INFO: ',lineNo,whereErr,keyVal))
+                print('%s:%s KeyError (guardrail) in "%s" - keyValue: %s' %  ('INFO: ',lineNo,whereErr,keyVal))
                 writer.writerow([guardrail, sourceVal, sourceReq, destVal,destReq])
                 difference_count += 1
                 continue
