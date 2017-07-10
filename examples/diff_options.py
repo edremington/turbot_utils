@@ -48,8 +48,9 @@ if __name__ == '__main__':
         destguardrails = turbotutils.guardrails.get_guardrail_list(turbot_api_access_key, turbot_api_secret_key, turbot_host_certificate_verification,
                                                                    turbot_host,
                                                                    dest_source_account_urn)
-        # find any rails in the dest that is not in source ( if any)
-        # and iterate over that instead of just over source
+        # find any rails in the dest that are not in source (if any)
+        # and iterate over that instead of just over source. There WAS a gap if 
+        # there were guardrails in dest not in source which in original code would be silently ignored.
         notInFirst = list(set(destguardrails) - set(sourceguardrails))
         railsList = list(set(sourceguardrails)) + notInFirst
         writer.writerow(['Guardrail-Name', 'Source-value', 'Source-requirement','Destination-value','Destination-requirement'])
