@@ -120,11 +120,8 @@ if __name__ == '__main__':
                     sourceVal=source['value']
                 if destVal == "":
                     destVal=dest['value']
-                    #frameinfo = getframeinfo(currentframe()).lineno
-                    #if source['requirement'] != dest['requirement']:
-                    #    print ( 'oops') 
+
                 writer.writerow([guardrail, sourceVal,source['requirement'], destVal,dest['requirement']])
-                    #writer.writerow([guardrail, source['value'], dest['value']])
                     
         if difference_count != 0:
             print('Accounts %s and %s are not in sync, please manually review and rectify this' %(args.source, args.dest))
