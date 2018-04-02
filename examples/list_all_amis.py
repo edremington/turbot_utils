@@ -1,22 +1,32 @@
 #!/usr/bin/env python
 
-import turbotutils
 import turbotutils.cluster
 import turbotutils.account
 import boto3
+import argparse
+import sys
 
 
-def main(akey, skey, token):
+def main(akey, skey, token, images):
     session = boto3.Session(aws_access_key_id=akey, aws_secret_access_key=skey, aws_session_token=token)
-    client = session.client('es', region_name='us-east-1')
+    client = session.client('ec2', region_name='us-east-1')
 
-    response = client.list_domain_names()
+    try:
+        response = client.describe_instances()
+        for instance in response['Reservations']:
+            for i in instance['Instances']:
+                images.append(i['ImageId'])
+    except Exception as e:
+        print(e)
 
-    for key in response['DomainNames']:
-        print(key['DomainName'])
-
+    return(images)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Finds which account an ec2 instance exists in')
+    #parser.add_argument('instance', help='the instance id you wish to find')
+
+    args = parser.parse_args()
+
     # Set to False if you do not have a valid certificate for your Turbot Host
     turbot_host_certificate_verification = True
 
@@ -29,11 +39,14 @@ if __name__ == '__main__':
     (turbot_api_access_key, turbot_api_secret_key) = turbotutils.get_turbot_access_keys()
     accounts = turbotutils.cluster.get_turbot_account_ids(turbot_api_access_key, turbot_api_secret_key, turbot_host_certificate_verification, turbot_host)
 
+    images = []
+
     for account in accounts:
         turbot_account = account
         print("Checking %s" % turbot_account)
 
         (akey, skey, token) = turbotutils.account.get_aws_access_key(turbot_api_access_key, turbot_api_secret_key, turbot_host_certificate_verification, turbot_host, turbot_account, turbot_user_id)
 
-        main(akey,skey,token)
+        main(akey,skey,token, images)
 
+    print(set(images))
